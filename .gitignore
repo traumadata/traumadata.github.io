@@ -3,5 +3,18 @@ _site
 node_modules
 Gemfile.lock
 *.gem
+*.Rproj
 .Rproj.user
 .Rhistory
+.DS_Store
+
+/_drafts
+/cache
+.jekyll-cache/
+
+
+# ignore temp files w/ trailing ~
+*~
+
+# ignore hidden files
+.*
