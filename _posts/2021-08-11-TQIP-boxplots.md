@@ -1,5 +1,5 @@
 ---
-title: "TQIP's risk-adjusted box plots"
+title: "TQIP's risk-adjusted boxplots"
 author: "Jake"
 date: '2021-08-11'
 output:
@@ -8,13 +8,14 @@ output:
     preserve_yaml: yes
 knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding,
   output_dir = "../_posts") })
-excerpt: The boxplots that TQIP includes in its risk-adjusted benchmark reports are
-  confusing.  I try to explain them.
+excerpt: The boxplots in TQIP's risk-adjusted benchmark reports are confusing.  I try to explain them.
 layout: post
 categories:
 - TQIP
 - R
 - Data Visualization
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Odds ratios
@@ -55,7 +56,7 @@ type of bar chart) of the simulated odds ratios with a blue curve to
 smooth over the bumps in the histogram. As you can see, the odds ratios
 are pretty normally distributed with most of them falling around 1.
 
-<img src="/img/histo-with-dens-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/histo-with-dens-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -63,14 +64,14 @@ Alternatively, this histogram can be shown by plotting the individual
 odds ratios and stacking them. Showing the individual odds ratios will
 help us understand the TQIP boxplots later on.
 
-<img src="/img/histodot-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/histodot-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
-Again, to help us understand the TQIP boxplots, let’s rotate this plot
-90 degrees.
+Again, to help us understand the TQIP boxplots, let’s flip this plot on
+its side.
 
-<img src="/img/histodot-on-side-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/histodot-on-side-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -82,14 +83,14 @@ line.
 Notice that the data haven’t changed at all. We’re only changing how the
 data are plotted.
 
-<img src="/img/histodot-to-beeswarm-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/histodot-to-beeswarm-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
 And finally, we’re going to zoom out a little bit to give us some more
 room to work.
 
-<img src="/img/zoom-out-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/zoom-out-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -104,7 +105,7 @@ includes a horizontal `reference line` on its plots to mark an odds
 ratio of one. TQIP’s plots also contain dotted lines at odds ratios of
 0.5 and 2.0, but I’m not going to show those here.
 
-<img src="/img/ref-line-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/ref-line-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -125,7 +126,7 @@ As you can see in this plot, the median is just a little bit greater
 than one (1.04 to be precise). So, 50% of centers had an odds ratio less
 than or equal to 1.04.
 
-<img src="/img/median-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/median-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -155,7 +156,7 @@ the data are at or below the third quartile; and the fourth quartile is
 just the maximum value so that 100% of the data is less than or equal to
 it.
 
-<img src="/img/quartiles-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/quartiles-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -166,7 +167,7 @@ have odds ratios less than or equal to this point) and the
 90<sup>th</sup> percentile (90% of centers have odds ratios less than or
 equal to this point; 10% have odds ratios that are higher).
 
-<img src="/img/p10-and-p90-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/p10-and-p90-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -189,7 +190,7 @@ These centers are shown with red dots in the plot. This is where the
 lowest performing 10% of trauma centers are. High percentiles and high
 deciles are bad things; that’s why they are shown in red.
 
-<img src="/img/deciles-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/deciles-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -199,7 +200,7 @@ Now that we’ve covered nearly all of the elements in a TQIP boxplot,
 lets bring it all together to see how the data/plot we’ve been looking
 at so far translates to TQIP’s boxplots.
 
-<img src="/img/putting-it-together-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/putting-it-together-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -235,9 +236,9 @@ the diamond-shaped odds ratio and then flatten out. The points where
 they flatten out into horizontal lines are the upper and lower limits of
 the confidence interval.
 
-<img src="/img/unnamed-chunk-1-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/unnamed-chunk-1-1.png" width="100%" style="display: block; margin: auto;" />
 
-## Average performers 1
+## Average performers: scenario \#1
 
 The importance of confidence intervals to your benchmark reports is that
 as long as your confidence interval crosses the reference line in the
@@ -253,11 +254,11 @@ classify the center as a high outlier or a low outlier, just an average
 performer. Therefore, the diamond for the odds ratio and the bars for
 the confidence interval are shown in black.
 
-<img src="/img/ci-avg-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/ci-avg-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
-## Average performers 2
+## Average performers: scenario \#2
 
 Your odds ratio will always fall within your confidence interval. (If it
 doesn’t, contact TQIP because something has gone very wrong\!) But the
@@ -273,7 +274,7 @@ data, the more uncertain TQIP’s estimates will be. And if your
 confidence interval crosses the reference line, your center is
 statistically indistinguishable from an average TQIP center.
 
-<img src="/img/ci-avg2-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/ci-avg2-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -286,7 +287,7 @@ performing worse than expected based your data. This could mean you have
 a quality of care issue, but it could also just mean that you have a
 quality of data issue.
 
-<img src="/img/ci-high-outlier-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/ci-high-outlier-1.png" width="100%" style="display: block; margin: auto;" />
 
   
 
@@ -302,7 +303,7 @@ performing better than expected based your data. This could mean you
 provide exemplary quality of care…but it could also just mean that you
 have a data quality issue.
 
-<img src="/img/ci-low-outlier-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/ci-low-outlier-1.png" width="100%" style="display: block; margin: auto;" />
 
 # Why some plots have different shapes
 
@@ -311,7 +312,7 @@ that are shaped differently from other cohorts. For example, in many of
 TQIP’s plots, you’ll likely notice that the boxplots for some cohorts
 are more scrunched up than other cohorts.
 
-<img src="/img/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;" />
 
 This can happen when the distribution of odds ratios differs between
 cohorts. In the above example, all the TQIP centers had odds ratios very
@@ -324,7 +325,7 @@ boxplot is much more spread out in that cohort.
 Adding the dots for centers’ individual odds ratios back in can help
 make this more clear.
 
-<img src="/img/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="/img/posts/2021-08-11-TQIP-boxplots/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;" />
 
 # Conclusion
 

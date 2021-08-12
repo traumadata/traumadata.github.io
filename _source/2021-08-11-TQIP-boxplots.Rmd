@@ -1,5 +1,5 @@
 ---
-title: "TQIP's risk-adjusted box plots"
+title: "TQIP's risk-adjusted boxplots"
 author: "Jake"
 date: '2021-08-11'
 output:
@@ -8,13 +8,14 @@ output:
     preserve_yaml: yes
 knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding,
   output_dir = "../_posts") })
-excerpt: The boxplots that TQIP includes in its risk-adjusted benchmark reports are
-  confusing.  I try to explain them.
+excerpt: The boxplots in TQIP's risk-adjusted benchmark reports are confusing.  I try to explain them.
 layout: post
 categories:
 - TQIP
 - R
 - Data Visualization
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -23,12 +24,21 @@ categories:
 
 base_dir <- "~/Desktop/traumadata.github.io/"
 base_url <- "/"
-fig_path <- "img/"
+
+
+#save plots in the folder for this post in the "img/posts/" directory
+file_path = rstudioapi::getActiveDocumentContext()$path #the file path of the current file
+img_prefix = gsub(x = basename(file_path), 
+									pattern = "(\\.Rmd)$", 
+									replacement = "")
+fig_path <- paste0("img/posts/", img_prefix, "/")
+
+
 
 
 knitr::opts_knit$set(base.dir = base_dir, base.url = base_url)
 
-knitr::opts_chunk$set(fig.path = fig_path, dpi = 200,
+knitr::opts_chunk$set(fig.path = fig_path, dpi = 150,
 											fig.align = "center",
 											out.width = '100%',
                       message = FALSE, warning = FALSE,
@@ -152,14 +162,14 @@ grid.draw(p)
 
 Alternatively, this histogram can be shown by plotting the individual odds ratios and stacking them. Showing the individual odds ratios will help us understand the TQIP boxplots later on. 
 
-```{r histodot}
+```{r histodot, fig.height=5.5}
 #histogram made of dots
 ggplot(mapping = aes(x=x)) +
 	geom_dotplot(
 		fill = alpha("gray", 0.5),
 		color = alpha("gray", 0.5),
 		binwidth = 0.1,
-		dotsize = 0.25,
+		dotsize = 0.18,
 		method = "histodot"
 	) +
 	labs(x = "Odds Ratio") +
@@ -172,7 +182,7 @@ ggplot(mapping = aes(x=x)) +
 
 \
 
-Again, to help us understand the TQIP boxplots, let's rotate this plot 90 degrees.
+Again, to help us understand the TQIP boxplots, let's flip this plot on its side.
 
 ```{r histodot-on-side}
 #histo dot turned on its side
@@ -695,7 +705,7 @@ p3 +
 
 
 
-## Average performers 1
+## Average performers: scenario #1
 
 The importance of confidence intervals to your benchmark reports is that as long as your confidence interval crosses the reference line in the plot (the confidence interval contains 1), TQIP can be reasonably confident that your center isn't doing a lot better or a lot worse than would be expected by the data. 
 
@@ -770,7 +780,7 @@ p3 +
 \
 
 
-## Average performers 2
+## Average performers: scenario #2
 
 
 Your odds ratio will always fall within your confidence interval. (If it doesn't, contact TQIP because something has gone very wrong!)  But the size of the confidence interval (how wide it is) will depend on a few factors.  The main factor is simply how many of your patients were in the cohort in the plot. 
@@ -779,7 +789,7 @@ This means that even though your center might be doing really well on some outco
 
 
 
-```{r ci-avg2}
+```{r ci-avg2, fig.height=5.5}
 #average 2
 pt = 0.6
 p3 +
@@ -806,7 +816,7 @@ p3 +
 
 If the lower bound of your center's confidence interval is greater than one, TQIP will label your center as a `high outlier`. This means that even after accounting for the uncertainty in the data, your center was performing worse than expected based your data. This could mean you have a quality of care issue, but it could also just mean that you have a quality of data issue. 
 
-```{r ci-high-outlier}
+```{r ci-high-outlier, fig.height=5.5}
 #high outlier
 pt = 1.2
 p3 +
@@ -858,7 +868,7 @@ Just as with high outliers, TQIP will let you know if you are a low outlier/high
 If the upper bound of your center's confidence interval is less than one, TQIP will label your center as a `low outlier`. This means that even after accounting for the uncertainty in the data, your center was performing better than expected based your data. This could mean you provide exemplary quality of care...but it could also just mean that you have a data quality issue. 
 
 
-```{r ci-low-outlier}
+```{r ci-low-outlier, fig.height=5.5}
 #low outlier
 pt = 0.85
 p3 +
@@ -892,7 +902,7 @@ Lastly, I'm going to discuss why it is that some cohorts have boxplots that are 
 
 ```{r}
 
-
+#make a function to create my TQIP boxplots
 suppressPackageStartupMessages(library(rlang))
 
 options(dplyr.summarise.inform = FALSE)
