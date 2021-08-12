@@ -27,3 +27,12 @@ codekit-config.json
 .sass-cache
 _asset_bundler_cache
 _site
+
+# R and RStudio
+.Rhistory
+.Rproj.user
+
+
+# Examples and documentation included with theme
+docs/
+test/
