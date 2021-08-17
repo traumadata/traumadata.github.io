@@ -190,7 +190,7 @@ it.
 
   
 
-# 10th and 90th percentiles
+# 10<sup>th</sup> and 90<sup>th</sup> percentiles
 
 Briefly, TQIP also shows the 10<sup>th</sup> percentile (10% of centers
 have odds ratios less than or equal to this point) and the
