@@ -38,6 +38,10 @@ _site
 # R and RStudio
 .Rhistory
 .Rproj.user
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
 
 
 
