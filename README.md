@@ -1,6 +1,6 @@
 # [Trauma Data Blog](https://traumadata.github.io/)
 
-This is the GitHub repo for my personal website as hosted on GitHub at traumadata.github.io. The site is powered by Jekyll and the [Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/). 
+This is the GitHub repo for my personal website as hosted on GitHub at [traumadata.github.io](traumadata.github.io). The site is powered by Jekyll and the [Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/). 
 
 
 
