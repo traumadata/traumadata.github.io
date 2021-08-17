@@ -24,7 +24,7 @@ toc: true
 # Intro
 
 U.S. trauma centers are required to “use a risk-adjusted benchmarking
-system to measure performance and outcomes.”\[1\] This is most commonly
+system to measure performance and outcomes.”[^1] This is most commonly
 done by submitting registry data to the Trauma Quality Improvement
 Program (TQIP). TQIP used to provide caterpillar plots to help visualize
 how each center performed compared to other centers. However,
@@ -32,6 +32,8 @@ caterpillar plots aren’t particularly helpful for showing how one
 specific center did compared to other centers (the whole point of
 benchmarking); they are better suited for showing the overall
 pattern/distribution of performance.
+
+[^1]: [Resources for Optimal Care of the Injured Patient 2014, page 109](https://www.facs.org/-/media/files/quality-programs/trauma/vrc-resources/resources-for-optimal-care.ashx)
 
 Therefore, TQIP moved to using “modified boxplots” to better highlight
 the performance of the center in the benchmark report. I really like
@@ -363,5 +365,3 @@ If it didn’t or you still have questions, send me an
 [email](mailto:TraumaDataBlog@gmail.com) or leave a comment. I’d also
 love suggestions for future topics.
 
-1.  [Resources for Optimal Care of the Injured Patient 2014,
-    page 109](https://www.facs.org/-/media/files/quality-programs/trauma/vrc-resources/resources-for-optimal-care.ashx)
