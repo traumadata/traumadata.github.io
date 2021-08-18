@@ -1,7 +1,7 @@
 ---
 title: "TQIP's Risk-Adjusted Boxplots"
 author: "Jake Roden-Foreman"
-date: '2021-08-11'
+date: '2021-08-18'
 output:
   md_document:
     variant: gfm
@@ -10,7 +10,6 @@ excerpt: The boxplots in TQIP's risk-adjusted benchmark reports are confusing.  
 tags:
 - Trauma
 - TQIP
-- R
 - Data Visualization
 editor_options: 
   chunk_output_type: console
@@ -22,6 +21,11 @@ toc: true
 
 ```{r setup, include=FALSE}
 
+library(tidyverse)
+library(ggbeeswarm)
+library(gginnards) #to edit/reorder geom layers
+
+theme_set(theme_classic())
 
 base_dir <- "~/Desktop/traumadata.github.io/"
 base_url <- "/"
@@ -34,6 +38,9 @@ img_prefix = gsub(x = basename(file_path),
 									replacement = "")
 fig_path <- paste0("img/posts/", img_prefix, "/")
 
+gh_path = paste0("https://github.com/traumadata/traumadata.github.io/blob/master/", 
+								 str_extract(file_path, "_source\\/.*?Rmd")
+								 )
 
 
 
@@ -47,11 +54,6 @@ knitr::opts_chunk$set(fig.path = fig_path, dpi = 150,
 											results = "as.is"
 											) 
 
-library(tidyverse)
-library(ggbeeswarm)
-library(gginnards) #to edit/reorder geom layers
-
-theme_set(theme_classic())
 
 
 ```
@@ -1088,5 +1090,7 @@ pt +
 # Conclusion  
 
 Hopefully this inaugural post on the Trauma Data Blog helped clear up a lot of questions you had about TQIP's boxplots in the benchmark reports. If it didn't or you still have questions, send me an [email](mailto:TraumaDataBlog@gmail.com) or leave a comment.  I'd also love suggestions for future topics. 
+
+To see the code I used to create this post, [click here](`r gh_path`).
 
 
