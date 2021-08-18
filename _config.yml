@@ -106,29 +106,35 @@ author:
   bio              : "Creator of the <ins>[Need For Trauma Intervention](https://doi.org/10.1097/jtn.0000000000000283)</ins>, <ins>[Standardized Triage Assessment Tool](https://doi.org/10.1097/ta.0000000000001814)</ins>, and hopefully many more things that can help improve trauma care."
   location         : "North Texas"
   email            : "TraumaDataBlog@gmail.com"
+  orcid_id         : "0000-0002-8338-397X"
   links:
     # - label: "Email"
-    #   icon: "fas fa-fw fa-envelope-square"
+    #   icon: "fas fa-fw fa-envelope-square"  
+    ### find more icons at https://fontawesome.com/v5.15/icons?d=gallery&p=2
+    ### the code pattern that is used for the icons is this:
+    ###  "icon_style_and_prefix class_declaration identifying_code"
+    ###  icon_style_and_prefix: (not all styles available for all icons)
+    ###           - fas is Font Awesome Solid
+    ###           - far is Font Awesome Regular
+    ###           - fal is Font Awesome Light
+    ###           - fad is Font Awesome Duo-tone
+    ###  class_declaration: see https://www.w3schools.com/icons/fontawesome_icons_intro.asp
+    ###           - fa is default class
+    ###           - fa-fw is fixed width
+    ###           - fa-lg is 33% larger
+    ###           - fa-2x is 2 times larger ...
+    ###           - fa-5x is 5 times larger
+    
     #   url: "mailto:TraumaDataBlog@gmail.com"
-    # - label: "Website"
-    #   icon: "fas fa-fw fa-link"
-    #   # url: "https://your-website.com"
-    # - label: "Twitter"
-    #   icon: "fab fa-fw fa-twitter-square"
-    #   # url: "https://twitter.com/"
-    # - label: "Facebook"
-    #   icon: "fab fa-fw fa-facebook-square"
-    #   # url: "https://facebook.com/"
     - label: "GitHub for this blog"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/traumadata/"
     - label: "Personal GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/jrf1111/"
-      
-    # - label: "Instagram"
-    #   icon: "fab fa-fw fa-instagram"
-    #   # url: "https://instagram.com/"
+    - label: "ORCID"
+      icon: "fab fa-fw fa-orcid"
+      url: "https://orcid.org/0000-0002-8338-397X"
 
 # Site Footer
 footer:
