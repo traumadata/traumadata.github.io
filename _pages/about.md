@@ -11,7 +11,7 @@ header:
 My name is Jake Roden-Foreman, and I am a trauma researcher at a large, urban trauma center in North Texas.[^1]  I've been working in trauma research since 2015, and I've always been impressed by the remarkable work that trauma centers do.  After working in and with trauma centers for a while, I've really been amazed by two things in particular:  
 
  1. Trauma centers generate *sooooo* much data---both in the EHR and especially in their trauma registries
- 2. The people tasked with using these data to improve patient care have little to no training in (a) the tools and methods needed to analyze the data they create and (b) how to properly interpret any such analyses 
+ 2. The people tasked with using these data to improve patient care often have little to no training in (a) the tools and methods needed to analyze the data they create and (b) how to properly interpret any such analyses 
 
 To be clear, I'm not criticizing anyone here. Trauma centers are staffed by some of the most highly trained and dedicated clinicians, registrars, and administrators out there. It's just that trauma centers are almost universally missing something that most businesses have these days: data analysts.
 
