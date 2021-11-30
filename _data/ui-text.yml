@@ -23,7 +23,7 @@ en: &DEFAULT_EN
   tags_label                 : "Tags:"
   categories_label           : "Categories:"
   date_label                 : "Updated:"
-  comments_label             : "Leave a comment"
+  comments_label             : "Leave a comment<br>You can disable the adds below with [Adblock Plus](https://adblockplus.org) for your browser. Disqus is great for comments and feedback, but I had no idea it came with these awful ads."
   comments_title             : "Comments"
   more_label                 : "Learn more"
   related_label              : "You may also enjoy"
