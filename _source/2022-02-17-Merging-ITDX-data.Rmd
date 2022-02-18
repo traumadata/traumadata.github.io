@@ -1,0 +1,93 @@
+---
+title: "Merging two data files"
+author: "Jake Roden-Foreman"
+date: '2022-02-17'
+output:
+  md_document:
+    variant: gfm
+    preserve_yaml: yes
+excerpt: DI made it a pain to make reports using ITDX data. This tool can make it (a little) easier.
+tags:
+- Trauma
+- Report Writing
+- Data
+- DI
+- Report Writer
+- ITDX
+editor_options: 
+  chunk_output_type: console
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding,
+  output_dir = "../_posts") })
+toc: true
+---
+
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+
+base_dir <- "~/Desktop/traumadata.github.io/"
+base_url <- "/"
+
+
+#save plots in the folder for this post in the "img/posts/" directory
+file_path = rstudioapi::getActiveDocumentContext()$path #the file path of the current file
+img_prefix = gsub(x = basename(file_path), 
+									pattern = "(\\.Rmd)$", 
+									replacement = "")
+fig_path <- paste0("img/posts/", img_prefix, "/")
+
+gh_path = paste0("https://github.com/traumadata/traumadata.github.io/blob/master/", 
+								 str_extract(file_path, "_source\\/.*?Rmd")
+								 )
+
+
+
+knitr::opts_knit$set(base.dir = base_dir, base.url = base_url)
+
+knitr::opts_chunk$set(fig.path = fig_path, dpi = 150,
+											fig.align = "center",
+											out.width = '100%',
+                      message = FALSE, warning = FALSE,
+                      cache = FALSE, echo = FALSE,
+											results = "as.is"
+											) 
+
+
+
+```
+
+# Intro
+
+FYI: This post is going to be a pretty straight forward and applied one.  
+
+For reasons that I don't understand, when Digital Innovations (DI; now owned by ESO) added its ITDX module to Collector, they didn't seem to take the time to carefully integrate those new fields into their existing data model.  Instead, they seem to have just duct taped those new data elements on top of the existing system.  As a result, you can't access the ITDX elements from Report Writer--you have to use ITDX Report Writer to get those data.  
+
+So what's the big deal?  Well, there are a few, and they can be highlighted pretty well with the following example.
+
+Imagine you wanted to run a report looking at injury mechanism, initial ED vital signs, ED discharge disposition, and blood product utilization. The first step is to make the report with the injury mechanism, vital signs, and ED discharge disposition in Report Writer--easy enough.  But now you also have to open up the ITDX Report Writer to make a second report for the data on blood products. And you might want to make a query for each of those reports: one for the Report Writer report, for example, to only include blunt injuries and another for the ITDX version to only include patients who received blood products in the first four hours.  Once you've built those reports and queries, you're finally ready to run the reports. And now you have to data files that you merge together, so you (almost certainly) open them up in Excel and use formulas to join them together. 
+
+Admittedly, these aren't big issues, but the cumulative result is a _big_ time suck for a pretty basic report.  Sadly, I can't do much to help with much of the above process.  However, I can help with the last part: merging the two reports.
+
+
+# The old way of merging two files 
+
+I made some fake but realistic data to show how much time can be spent on just trying to merge two data files together using the formulas in Excel.  Here's a recording of me going through this process. 
+
+\
+
+<iframe width="1028" height="588" src="https://www.youtube.com/embed/WFFCiFVsdJY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+\
+
+
+
+
+
+# Conclusion  
+
+Hopefully this inaugural post on the Trauma Data Blog helped clear up a lot of questions you had about TQIP's boxplots in the benchmark reports. If it didn't or you still have questions, send me an [email](mailto:TraumaDataBlog@gmail.com) or leave a comment.  I'd also love suggestions for future topics. 
+
+To see the code I used to create this post, [click here](`r gh_path`).
+
+
