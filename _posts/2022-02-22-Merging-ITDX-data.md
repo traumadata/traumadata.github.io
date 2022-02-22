@@ -70,8 +70,7 @@ Excel. Here’s a recording of me going through this process.
 
 <div style="margin-bottom: 35px;">
 
-<iframe width="1028" height="588" src="https://www.youtube.com/embed/cftMq_SDJkk" title="YouTube video player" frameborder="0" allowfullscreen>
-</iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/cftMq_SDJkk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 </div>
 
