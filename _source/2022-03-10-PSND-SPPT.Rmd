@@ -1,0 +1,935 @@
+---
+title: "Spatial point pattern test for Project Safe Neighborhoods: Dallas"
+author: "Jake Roden-Foreman"
+date: "2022-03-10"
+layout: splash
+permalink: /PSND-SPPT/
+hidden: true
+output:
+  md_document:
+    variant: gfm
+    preserve_yaml: yes
+excerpt: 
+editor_options: 
+  chunk_output_type: console
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding,
+  output_dir = "../_posts") })
+---
+
+
+
+The map below is part of a project examining the effectiveness of Dallas’s Project Safe Neighborhoods initiative. The map shows the results of a spatial point pattern test examining what areas experienced changes in violent crime.
+
+The target areas are indicated by a red border. The spatial point pattern test was performed on the city of Dallas as well as the municipalities neighboring the target area (Cockrell Hill, Garland, Highland Park, Richardson, and University Park) for the 12 months before vs. after the launch of Dallas’s Project Safe Neighborhoods initiative in April 2018. The test was performed at the level of the smallest administrative regions available (Dallas Police Department patrol beats for Dallas and city/town boundaries for other municipalities). Due to the large number of regions tested, the p-values were adjusted to control for the false discovery rate.
+
+
+
+
+
+```{r setup, include=FALSE}
+
+
+knitr::opts_chunk$set(echo = TRUE, 
+											results = "asis",
+											tidy = "styler",
+											comment = "")
+
+suppressPackageStartupMessages(library(tidyverse))
+
+
+library(sf)
+
+
+library(sppt) #https://github.com/wsteenbeek/sppt
+library(sp)
+library(raster, exclude = "select")
+
+library(leaflet)
+
+# library(tmaptools)
+#library(ggtext)
+
+
+
+
+base_dir <- "~/Desktop/traumadata.github.io/"
+base_url <- "/"
+
+
+#save plots in the folder for this post in the "img/posts/" directory
+file_path = rstudioapi::getActiveDocumentContext()$path #the file path of the current file
+img_prefix = gsub(x = basename(file_path), 
+									pattern = "(\\.Rmd)$", 
+									replacement = "")
+fig_path <- paste0("img/posts/", img_prefix, "/")
+
+gh_path = paste0("https://github.com/traumadata/traumadata.github.io/blob/master/", 
+								 str_extract(file_path, "_source\\/.*?Rmd")
+								 )
+
+
+
+knitr::opts_knit$set(base.dir = base_dir, base.url = base_url)
+
+knitr::opts_chunk$set(fig.path = fig_path, dpi = 150,
+											fig.align = "center",
+											out.width = '100%',
+                      message = FALSE, warning = FALSE,
+                      cache = FALSE, echo = FALSE,
+											results = "as.is"
+											) 
+
+
+
+```
+
+
+```{r city-of-dallas}
+
+base_path = "/Users/jr-f/Desktop/OneDrive - Texas Health Resources/Safe Neighborhoods/"
+
+beats = read_sf(file.path(base_path, "Data and analysis", "Data", "DPD shapefiles", "Beats.shp"))
+
+
+#define PSN vs non-PSN areas
+#According to Renee Hall's presentation to city hall on June 11, 2018, the target areas are 
+#  DPD Sectors 210 and 250 (but not 240 as in other presentations)
+
+beats$psnd_area = beats$SECTOR %in% c(210, 250)
+
+
+
+
+
+```
+
+
+
+
+
+```{r other-shapefiles}
+
+cities = read_sf(file.path(base_path, "Data and analysis", "Data", "TxDOT_City_Boundaries", "City.shp"))
+
+cities$CITY_NM = toupper(cities$CITY_NM)
+
+
+cities = cities %>% 
+	filter(CITY_NM %in% c("GARLAND", "RICHARDSON",
+								 "HIGHLAND PARK", "UNIVERSITY PARK", 
+								 "COCKRELL HILL" #since fully surrounded by Dallas...mostly for aesthetics
+								 )
+	)
+
+
+cities = cities %>% dplyr::select(OBJECTID, CITY_NM, GID, CITY_FIPS, 
+																	SHAPE_Leng, SHAPE_Area, geometry)
+
+cities$psnd_area = FALSE
+
+
+```
+
+
+
+```{r merge-shapefiles}
+
+
+#convert geometry & coordinate system to match
+beats = beats %>% st_cast("MULTIPOLYGON")
+cities = st_transform(cities, st_crs(beats))  #convert to 'NAD83' since that is what is used in the DPD crime data
+
+
+#assign "city" names to the regions
+beats = beats %>% 
+	mutate(CITY_NM = if_else(psnd_area, "Dallas PSN", "Dallas non-PSN"))
+
+cities = cities %>% 
+	mutate(BEAT = CITY_NM,
+			 SECTOR = CITY_NM
+	)
+
+
+
+
+#merge the DPD files of Dallas with the rest of the county's cities
+crime_map = rbind(beats %>% dplyr::select(CITY_NM, BEAT, SECTOR, psnd_area, geometry),
+									cities %>% dplyr::select(CITY_NM, BEAT, SECTOR, psnd_area, geometry)
+									) %>%
+	rename(city = CITY_NM)
+
+
+
+
+
+#the weird gap between DPD sector 250 and Richardson is unincorporated Dallas County
+# see https://www.dallascounty.org/Assets/uploads/images/duas/Unincorporated-Area-Map.png
+# try to fill it in here
+
+
+temp = st_polygon(list(rbind(
+	#  x, y
+    c(2505700, 7023000), # bottom left
+    c(2510000, 7023000), # bottom right
+    c(2510000, 7028500), # top right
+    c(2505700, 7028500), # top left
+    c(2505700, 7023000)  # bottom left again to close it out
+))) %>% 
+	st_sfc()
+
+st_crs(temp) = st_crs(crime_map)
+
+temp = st_sf(
+	city = "Unincorporated Dallas County",
+	BEAT = "Unincorporated Dallas County",
+	SECTOR = "Unincorporated Dallas County",
+	psnd_area = FALSE, 
+	geometry = temp
+)
+
+
+
+small_crime = crime_map %>% 
+	st_crop(
+		xmin = 2500000, xmax = 2520000,
+		ymin = 7020000, ymax = 7030000
+	) %>% 
+	st_buffer(dist = 3.5) %>% 
+	summarise()
+
+
+
+
+temp = st_difference(temp, small_crime) 
+
+crime_map = rbind(crime_map, temp)
+
+rm(temp, small_crime)
+
+```
+
+
+
+
+
+
+```{r fill-gaps}
+#fill in the gaps a bit
+
+
+#this handles 99% of the issues
+crime_map = crime_map %>% 
+	st_buffer(dist = units::set_units(5, "ft")) 
+
+
+
+#fix that one last issue near the center (along the border of beat 258 and Garland)
+
+temp = crime_map %>% 
+	filter(BEAT %in% c("GARLAND")) %>% 
+	st_buffer(dist = 48, singleSide = TRUE) %>% 
+	st_difference(., crime_map %>% filter(!BEAT %in% c("GARLAND")) %>% st_union())
+
+
+crime_map = bind_rows(
+    crime_map %>% filter(!BEAT %in% c("GARLAND")), 
+    temp
+)
+
+
+rm(temp)
+
+
+
+
+
+```
+
+
+
+
+
+
+
+```{r import-DPD-crime-data}
+
+dpd = vroom::vroom(file.path(base_path, "Data and analysis", "Data", "Dallas", "Police incidents cleaned.csv"), 
+						delim = ",", guess_max = 5000
+)
+
+
+dpd = dpd %>% dplyr::select(Incident_Number, Beat, Division, Sector,  Date_incident_created,
+														SRS_crimes, robbery_weapon, assault_type, X_Coordinate, Y_Cordinate, 
+														Zip_Code, City, State, Location1) %>% 
+	filter(!is.na(Beat))
+
+
+
+dpd = dpd %>% mutate(
+	# Date_incident_created
+	year_incident_created = lubridate::year(Date_incident_created),
+	month_incident_created = lubridate::month(Date_incident_created, label=T, abbr=F) 
+)
+
+
+dpd = dpd %>% filter(year_incident_created > "2014")
+dpd = dpd %>% filter(year_incident_created < "2021")
+
+
+
+dpd = dpd %>% 
+	#define PSN vs non-PSN areas
+	#PSND target areas are in DPD Sectors 210 and 250
+	mutate(psnd_area = Sector %in% c(210, 250)) 
+
+
+
+
+
+#combine the offense types
+dpd = dpd %>% 
+	 mutate(
+	 	offense = glue::glue("{SRS_crimes} {robbery_weapon} {assault_type}", .na = ""),
+	 	offense = str_squish(offense)
+	 )
+
+
+vcrimes = c(
+						"Murder/NonNegligent Homicide", 
+						
+						"Robbery Firearm",
+						"Robbery Knife or Cutting Instrument",
+						"Robbery StrongArm(Hands,Fists,Feet,etc)",
+						"Robbery Other Dangerous Weapon",
+						
+						"Assault Firearm", "Assault Knife or Cutting Instrument",
+						"Assault StrongArm(Hands,Fists,Feet,etc)",
+						"Assault Other Dangerous Weapon"
+)
+
+
+dpd$vcrime = dpd$offense %in% vcrimes
+
+
+
+
+
+#make a proper "date" variable
+dpd$date = paste0(dpd$month_incident_created, " 1, ", dpd$year_incident_created)
+dpd$date = as.Date(dpd$date, format = "%b %d, %Y")
+
+
+
+dpd$pre_post = if_else(dpd$date >= as.Date("2018-04-01"),
+												 "Post", "Pre"
+												 )
+
+
+dpd$month_number = lubridate::month(dpd$date)
+
+
+temp = distinct(dpd, date) %>% arrange(date) %>% mutate(date_sequence = 1:nrow(.))
+dpd = left_join(dpd, temp, by = "date")
+rm(temp)
+
+
+
+dpd$yr_qtr = paste0(dpd$year_incident_created, " Q",
+													 lubridate::quarter(dpd$date)
+													 )
+
+
+
+
+dpd$Beat = factor(dpd$Beat)
+dpd$Sector = factor(dpd$Sector)
+dpd$date_sequence = factor(dpd$date_sequence)
+
+
+
+
+
+```
+
+
+
+
+
+
+```{r import-remaining-crime-data}
+
+
+srs_data = vroom::vroom(file.path(base_path, "Data and analysis", "Data", "Combined crime data.csv"))
+
+
+srs_data = srs_data %>% 
+	mutate(
+		city = str_remove(agency, " PD")
+	) %>% 
+	filter(city %in% cities$CITY_NM) %>% 
+	filter(offense %in% vcrimes)
+
+
+
+
+srs_data = srs_data %>% filter(year > 2014)
+srs_data = srs_data %>% filter(year < 2021)
+
+
+
+
+
+#make a proper "date" variable
+srs_data$date = paste0(srs_data$month, " 1, ", srs_data$year)
+srs_data$date = as.Date(srs_data$date, format = "%b %d, %Y")
+
+
+
+srs_data$pre_post = if_else(srs_data$date >= as.Date("2018-04-01"),
+												 "Post", "Pre"
+												 )
+
+
+srs_data$month_number = lubridate::month(srs_data$date)
+
+
+temp = distinct(srs_data, date) %>% arrange(date) %>% mutate(date_sequence = 1:nrow(.))
+srs_data = left_join(srs_data, temp, by = "date")
+rm(temp)
+
+
+
+srs_data$yr_qtr = paste0(srs_data$year, " Q",
+													 lubridate::quarter(srs_data$date)
+													 )
+
+
+
+
+srs_data$date_sequence = factor(srs_data$date_sequence)
+
+
+
+
+
+
+
+
+
+#convert `srs_data` from summary counts to individual events
+
+temp = srs_data %>% filter(n>0)
+
+srs_events = srs_data %>% filter(n == Inf)
+
+for(i in 1:nrow(temp)){
+	n = temp$n[i]
+	
+	srs_events = bind_rows(
+		srs_events,
+		replicate(n = n, expr = temp[i, ], simplify = FALSE)
+	)
+	
+}
+
+
+stopifnot(sum(srs_data$n) == nrow(srs_events))
+
+rm(i, n, temp, srs_data)
+
+
+```
+
+
+
+
+
+```{r merge-crime-data}
+
+
+#add city centroids as crime locations
+temp = cities %>% st_centroid() %>% tibble() %>% 
+	#keep typo to match with `dpd`
+	tidyr::extract(geometry, into = c('X_Coordinate', 'Y_Cordinate'), '\\((.*),(.*)\\)', conv = T)
+
+srs_events = left_join(srs_events, 
+											 temp %>% dplyr::select(CITY_NM, BEAT, SECTOR, X_Coordinate, Y_Cordinate), 
+											 by = c("city" = "CITY_NM"))
+
+rm(temp)
+
+
+srs_events = srs_events %>% 
+	group_by(city) %>% 
+	mutate(
+		Incident_Number = paste(city, row_number())
+	) %>% 
+	ungroup()
+
+
+
+
+
+
+
+mdata = dpd %>% filter(!is.na(SRS_crimes)) %>% filter(vcrime)
+
+mdata = mdata %>% rename(
+	BEAT = Beat,
+	SECTOR = Sector
+) %>% 
+	dplyr::select(any_of(colnames(srs_events)))
+
+
+mdata = rbind(mdata, 
+							srs_events %>% dplyr::select(any_of(colnames(mdata))))
+
+
+mdata$ID = 1:nrow(mdata)
+
+
+```
+
+
+
+
+
+
+
+
+```{r sppt-prep}
+
+
+psnd_area = crime_map %>% 
+	filter(psnd_area) %>% 
+	summarise()
+
+
+
+
+map = crime_map %>% summarise() 
+
+
+
+
+#look at 12 months before and after PSND started
+mdata = mdata %>% 
+	filter(date < as.Date("2018-04-01") + lubridate::years(1) & 
+				 	date >= as.Date("2018-04-01") - lubridate::years(1)
+				 	)
+
+
+
+
+
+
+#use beat centroids for cases with missing geolocation
+temp = mdata %>% filter(is.na(X_Coordinate) | is.na(Y_Cordinate)) %>% 
+	select(-X_Coordinate, - Y_Cordinate)
+
+cents = crime_map %>% select(BEAT, geometry) %>% 
+	st_centroid() %>% 
+	tibble() %>% 
+	#keep typo to match with `dpd`
+	tidyr::extract(geometry, into = c('X_Coordinate', 'Y_Cordinate'), '\\((.*),(.*)\\)', conv = T)
+
+temp = left_join(temp, cents, by = "BEAT")
+
+
+mdata = bind_rows(
+	mdata %>% filter(!ID %in% temp$ID), 
+	temp
+)
+
+
+rm(temp, cents)
+
+
+
+
+
+
+
+
+# mdata %>% count(pre_post, date) %>% arrange(date) %>% data.frame() 
+
+
+
+
+
+
+# Turning mdata into spatial point data frame of violent crimes
+
+coordinates(mdata) <- c("X_Coordinate", "Y_Cordinate")
+crs(mdata) <- crs(map)
+
+
+pre <- mdata[mdata$pre_post == "Pre", ]
+post <- mdata[mdata$pre_post == "Post", ]
+
+
+```
+
+
+
+
+
+
+
+```{r sppt-analysis-beats}
+
+
+
+sppt_diff = sppt_diff(post, pre, as(crime_map, 'Spatial'), adj = "fdr")
+
+
+
+#calculate ORs, CIs, and pvals from GLMs
+#based on sppt::sppt_diff()
+sppt_diff$OR = -1
+sppt_diff$lci = -1
+sppt_diff$uci = -1
+sppt_diff$pval = -1
+
+for(i in 1:nrow(sppt_diff)){
+	ro <- sppt_diff[i, ]
+	da <- matrix(c(ro$nevents.b, ro$nevents.t,
+								 ro$tot.b - ro$nevents.b, ro$tot.t - ro$nevents.t),
+							 ncol = 2)
+
+	if(sum(da[,1]) > 0){
+		mod = glm(da~ c("B", "A"), family = binomial())
+		sppt_diff$OR[i] = mod %>% coef() %>% exp() %>% .[2] %>% as.numeric()
+		
+		cis = suppressMessages(confint(mod, level = 0.95)) %>% exp()
+		sppt_diff$lci[i] = cis[2,1] %>% as.numeric()
+		sppt_diff$uci[i] = cis[2,2] %>% as.numeric()
+		sppt_diff$pval[i] = broom::tidy(mod)$p.value[2]
+	} else{
+		sppt_diff$OR[i] = NA_real_
+		sppt_diff$lci[i] = NA_real_
+		sppt_diff$uci[i] = NA_real_
+		sppt_diff$pval[i] = NA_real_
+	}
+	
+	
+}
+rm(mod, cis, ro, da)
+
+
+
+
+
+
+
+
+
+
+
+
+#places with significant differences after controlling for false discovery rate
+
+sppt_sig <- sppt_diff[ which(sppt_diff$p.adjusted < 0.05),]
+
+temp = left_join(crime_map, 
+								 as_tibble(sppt_sig) %>% dplyr::select(BEAT, diff_perc, 
+								 																			p.value, p.adjusted, 
+								 																			perc.t, perc.b, 
+								 																			SIndex.robust, OR, lci, uci, pval
+								 																			), 
+								 by = "BEAT"
+								 ) %>% 
+	filter(!is.na(diff_perc))
+
+
+
+
+
+
+
+
+#places with significant differences *before* controlling for false discovery rate
+
+sppt_sig2 <- sppt_diff[ which(sppt_diff$p.value < 0.05),]
+
+temp2 = left_join(crime_map, 
+								 as_tibble(sppt_sig2) %>% dplyr::select(BEAT, diff_perc,
+								 																			 p.value, p.adjusted, 
+								 																			 perc.t, perc.b, 
+								 																			SIndex.robust, OR, lci, uci, pval), 
+								 by = "BEAT"
+								 ) %>% 
+	filter(!is.na(diff_perc))
+
+
+
+
+
+
+
+
+
+
+
+temp$log_odds = log(temp$OR)
+
+
+
+
+```
+
+
+
+
+
+```{r prep-for-map}
+
+
+library(leaflet)
+
+map_data = left_join(
+	crime_map, 
+	sppt_diff@data,
+	by = c("city", "BEAT", "SECTOR", "psnd_area")
+) %>%
+	st_transform("WGS84")
+
+
+
+#handle areas with low counts
+map_data = map_data %>% mutate(
+	p.value = if_else(nevents.b == 0, NA_real_, p.value),
+	p.adjusted = if_else(nevents.b == 0, NA_real_, p.adjusted),
+	OR = if_else(nevents.b == 0, NA_real_, OR),
+	lci = if_else(nevents.b == 0, NA_real_, lci),
+	uci = if_else(nevents.b == 0, NA_real_, uci),
+	pval = if_else(nevents.b == 0, NA_real_, pval)
+)
+
+
+
+map_data = map_data %>% 
+	mutate(
+		log_odds = log(OR),
+		
+		
+		
+		
+		label_place = case_when(
+			city == "Dallas PSN" ~ paste("Dallas Police Beat", BEAT, "(in target area)"),
+			city == "Dallas non-PSN" ~ paste("Dallas Police Beat", BEAT, "(not in target area)"),
+			city == "Unincorporated Dallas County" ~ "Unincorporated Dallas County",
+			TRUE ~ paste("City of", str_to_title(city))),
+		
+		label_or = paste0("OR (95% CI): ", 
+										 scales::number(OR, 0.01), " (", 
+										scales::number(lci, 0.01), ", ",
+										scales::number(uci, 0.01), ")"
+										 ),
+		
+		label_ps = paste0("P = ", scales::pvalue(p.value), ", ",
+										 "P (adjusted) = ", scales::pvalue(p.adjusted)
+										 ) %>% str_replace_all("= <0", "< 0"),
+
+
+		
+		
+		#map_data$nevents.t is the number of events pre-PSND
+		#map_data$nevents.b is the number of events post-PSND
+		label_counts = paste0("Number of violent crimes: ",
+													"Pre-PSND = ", nevents.t, " | Post-PSND = ", nevents.b
+													),
+		
+		label_prop = paste0("Proportion of violent crimes: ",
+												"Pre-PSND = ", 
+												scales::percent(perc.t, 0.01, scale = 1),
+												" | Post-PSND = ", 
+												scales::percent(perc.b, 0.01, scale = 1)
+		),
+		
+		tooltip = paste(
+			label_place, label_or, label_ps, label_counts, label_prop,
+			sep = "<br>"
+		)
+		
+		
+
+	)
+
+
+
+
+
+
+breaks = c(0.1, 1/5, 1/2,
+					 1,
+					 10,   5,   2  ) %>% sort()
+
+my_colors = colorRampPalette(c("blue", "white", "firebrick"))
+
+
+bins = c(0, 0.1, 0.2, 0.5, 0.99, 1.0, 1.01, 2.0, 5.0, 10.0, Inf)
+pal = colorBin(my_colors(length(bins)), domain = map_data$OR, bins = bins)
+
+
+
+labels = map_data$tooltip %>% lapply(htmltools::HTML)
+
+labels_before = map_data %>% filter(p.value < 0.05) %>% pull(tooltip) %>% lapply(htmltools::HTML)
+
+labels_after = map_data %>% filter(p.adjusted < 0.05) %>% pull(tooltip) %>% lapply(htmltools::HTML)
+
+
+
+
+
+```
+
+
+
+
+
+
+```{r leaflet-map}
+
+
+leaflet_map = 
+	leaflet(map_data %>% st_transform("WGS84")) %>%
+	setView( lng = -96.77, lat = 32.8, zoom = 10) %>% 
+	addProviderTiles(providers$CartoDB.Voyager) %>% 
+	addPolygons(
+		data = map_data %>% st_transform("WGS84"),
+		stroke = TRUE,color = "#000000", 
+		weight = 1, 
+		opacity = 1.0, 
+		
+		fill = TRUE, fillColor = ~pal(OR),
+		fillOpacity = 0.5,
+		highlightOptions = highlightOptions(
+			color = "white", weight = 2,
+			bringToFront = TRUE),
+		
+		label = labels,
+		labelOptions = labelOptions(
+			style = list("font-weight" = "normal", padding = "3px 8px"),
+			textsize = "12px",
+			direction = "auto"),
+		
+		group = "All areas",
+		smoothFactor = 1
+		
+	) %>% 
+	
+	
+	addPolygons(
+		data = map_data %>% filter(p.adjusted < 0.05) %>% st_transform("WGS84"),
+		stroke = TRUE,color = "#000000", 
+		weight = 1, 
+		opacity = 1.0, 
+		
+		fill = TRUE, fillColor = ~pal(OR),
+		fillOpacity = 0.5,
+		highlightOptions = highlightOptions(
+			color = "white", weight = 2,
+			bringToFront = TRUE),
+		
+		label = labels_after,
+		labelOptions = labelOptions(
+			style = list("font-weight" = "normal", padding = "3px 8px"),
+			textsize = "12px",
+			direction = "auto"),
+		
+		group = "Areas with significant change after adjustment",
+		smoothFactor = 1
+		
+	) %>% 
+	
+	
+	
+	addPolygons(
+		data = map_data %>% filter(p.value < 0.05) %>% st_transform("WGS84"),
+		stroke = TRUE,color = "#000000", 
+		weight = 1, 
+		opacity = 1.0, 
+		
+		fill = TRUE, fillColor = ~pal(OR),
+		fillOpacity = 0.5,
+		highlightOptions = highlightOptions(
+			color = "white", weight = 2,
+			bringToFront = TRUE),
+		
+		label = labels_before,
+		labelOptions = labelOptions(
+			style = list("font-weight" = "normal", padding = "3px 8px"),
+			textsize = "12px",
+			direction = "auto"),
+		
+		group = "Areas with significant change before adjustment",
+		smoothFactor = 1
+		
+	) %>% 
+	
+	
+	
+	
+	addLegend(pal = pal, values = ~OR, opacity = 0.7, 
+						title = NULL,
+						position = "bottomright") %>% 
+	addPolygons(
+		data = psnd_area %>% st_transform("WGS84"), 
+		stroke = TRUE, color = "red", 
+		weight = 3, opacity = 1,
+		fill = FALSE, 
+		group = "PSND Target Area",
+		smoothFactor = 1
+		
+	) %>% 
+	addLayersControl(
+		overlayGroups = "PSND Target Area",
+		baseGroups = c("All areas",
+									 "Areas with significant change before adjustment",
+									 "Areas with significant change after adjustment"
+		),
+		options = layersControlOptions(collapsed = FALSE)
+		
+	)
+
+
+# leaflet_map
+
+map_path = file.path(base_dir, "assets", "PSND-SPPT")
+
+if(!dir.exists(map_path)){
+	dir.create(map_path, recursive = TRUE) 
+}
+
+htmlwidgets::saveWidget(leaflet_map, 
+									file = file.path(map_path, "PSND_SPPT_leaflet_map.html"),
+									title = "Results of spatial point pattern test"
+									)
+
+
+
+
+```
+
+
+
+\
+\
+\
+
+
+<iframe src="/assets/PSND-SPPT/PSND_SPPT_leaflet_map.html" height="800px" width="100%" style="border:none;">
+</iframe>
+
+
+\
+\
+\
+
+
+
+To see the code I used to create this post, [click here](`r gh_path`).
+
+
